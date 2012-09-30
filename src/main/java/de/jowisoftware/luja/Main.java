@@ -37,8 +37,6 @@ public class Main {
         update();
         initVersions();
         startMain();
-
-        userSettings.save();
     }
 
     private boolean hasArg(final String name) {
@@ -66,6 +64,8 @@ public class Main {
 
     private void startMain() {
         final Version version = findStartVersion();
+        userSettings.save();
+
         if (version != null) {
             version.start(mainArgs);
         }

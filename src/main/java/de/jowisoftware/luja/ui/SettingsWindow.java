@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -75,14 +76,38 @@ public class SettingsWindow extends JDialog {
         final JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(3, 2));
         panel.add(new JLabel("Automatically start last version"));
-        panel.add(new JLabel("x"));
+        panel.add(createAutostartCheckbox());
 
         panel.add(new JLabel("Update every"));
         panel.add(new JLabel("start, day, week, month, never"));
 
         panel.add(new JLabel("Delete old version on update"));
-        panel.add(new JLabel("x"));
+        panel.add(createCleanupCheckbox());
         return panel;
+    }
+
+    private JCheckBox createCleanupCheckbox() {
+        final JCheckBox box = new JCheckBox("enable auto clean");
+        box.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                settings.setAutoClean(box.isSelected());
+            }
+        });
+        box.setSelected(settings.isAutoClean());
+        return box;
+    }
+
+    private JCheckBox createAutostartCheckbox() {
+        final JCheckBox box = new JCheckBox("enable autostart");
+        box.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                settings.setAutostart(box.isSelected());
+            }
+        });
+        box.setSelected(settings.isAutostart());
+        return box;
     }
 
     private void centerOnScreen() {

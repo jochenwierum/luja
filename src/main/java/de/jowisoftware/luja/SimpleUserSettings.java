@@ -27,12 +27,23 @@ public class SimpleUserSettings implements UserSettings {
         }
     }
 
+    private boolean getBoolean(final String key, final boolean defaultValue) {
+        final String value = properties.getProperty(key);
+
+        if (value == null) {
+            return defaultValue;
+        } else {
+            return value.toLowerCase().equals("true");
+        }
+    }
+
     @Override
     public void save() {
         try {
             final FileOutputStream outputStream = new FileOutputStream(settingsFile);
             properties.store(outputStream, "automatically saved user settings");
             outputStream.close();
+            System.out.println(isAutoClean());
         } catch (final IOException e) {
             throw new RuntimeException("Unable to save user.settings to " +
                     settingsFile, e);
@@ -69,13 +80,13 @@ public class SimpleUserSettings implements UserSettings {
         properties.setProperty("recentversion", version);
     }
 
-    private boolean getBoolean(final String key, final boolean defaultValue) {
-        final String value = properties.getProperty(key);
+    @Override
+    public boolean isAutoClean() {
+        return getBoolean("autoclean", true);
+    }
 
-        if (value == null) {
-            return defaultValue;
-        } else {
-            return value.toLowerCase().equals("true");
-        }
+    @Override
+    public void setAutoClean(final boolean autoClean) {
+        properties.setProperty("autoclean", Boolean.toString(autoClean));
     }
 }

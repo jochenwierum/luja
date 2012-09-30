@@ -11,4 +11,7 @@ public interface UserSettings {
 
     String getRecentVersion();
     void setRecentVersion(String version);
+
+    boolean isAutoClean();
+    void setAutoClean(boolean value);
 }

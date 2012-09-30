@@ -1,0 +1,176 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>de.jowisoftware</groupId>
+	<artifactId>luja</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>LUJA</name>
+
+	<description>Launcher and Updater for Java Applications</description>
+	<url>https://jowisoftware.de:4443/trac/ssh</url>
+
+	<organization>
+		<name>JoWiSoftware</name>
+		<url>http://www.jowisoftware.de</url>
+	</organization>
+
+	<issueManagement>
+		<system>Trac</system>
+		<url>https://jowisoftware.de:4443/trac/ssh</url>
+	</issueManagement>
+
+	<ciManagement>
+		<system>Jenkins</system>
+		<url>http://tomcat.twoprogrammers.de/jenkins</url>
+	</ciManagement>
+
+	<scm>
+		<connection>scm:git:git://github.com/jochenwierum/luja.git</connection>
+		<developerConnection>scm:git:git@github.com:jochenwierum/luja.git</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/jochenwierum/luja.git</url>
+	</scm>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.6</java.version>
+		<finalname>luja</finalname>
+	</properties>
+
+	<dependencies>
+		<!-- Test Dependencies -->
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-library</artifactId>
+			<version>1.2.1</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jmock</groupId>
+			<artifactId>jmock-junit4</artifactId>
+			<version>2.5.1</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>hamcrest-library</artifactId>
+					<groupId>org.hamcrest</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>hamcrest-core</artifactId>
+					<groupId>org.hamcrest</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>junit-dep</artifactId>
+					<groupId>junit</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit-dep</artifactId>
+			<version>4.10</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	
+	   <build>
+        <defaultGoal>package</defaultGoal>
+        <finalName>${finalname}</finalName>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>
+                    <compilerId>javac</compilerId>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>2.4.1</version>
+                <configuration>
+                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                    <filesets>
+                        <fileset>
+                            <directory>target</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>de.jowisoftware.luja.Main</mainClass>
+                        </manifest>
+                        <manifestEntries>
+                            <Build-Date>${timestamp}</Build-Date>
+                            <SCM-Revision>${buildNumber}</SCM-Revision>
+                            <SCM-Branch>${scmBranch}</SCM-Branch> 
+                        </manifestEntries>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <SCM-Revision>${buildNumber}</SCM-Revision>
+                            <SCM-Branch>${scmBranch}</SCM-Branch>
+                            <Build-Date>${timestamp}</Build-Date> 
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <timestampFormat>
+                            {0,date,yyyy-MM-dd}
+                    </timestampFormat>
+                    <doCheck>false</doCheck>
+                    <doUpdate>true</doUpdate>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

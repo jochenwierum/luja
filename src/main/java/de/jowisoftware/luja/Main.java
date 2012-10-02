@@ -1,32 +1,25 @@
 package de.jowisoftware.luja;
 
-import java.util.LinkedList;
-import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
-import de.jowisoftware.luja.ui.VersionSelectWindow;
+import de.jowisoftware.luja.settings.IncludedSettings;
+import de.jowisoftware.luja.settings.UserSettings;
+import de.jowisoftware.luja.ui.InitialSetup;
+import de.jowisoftware.luja.ui.UIProgressWindow;
 import de.jowisoftware.luja.versions.DirectoryManager;
 import de.jowisoftware.luja.versions.Version;
 
 public class Main {
-    private final Settings settings;
-    private final String[] thisArgs;
-    private final String[] mainArgs;
-
-    private final DirectoryManager manager;
-    private final UserSettings userSettings;
+    private final AppState appState;
 
     public Main(final String[] args) {
-        thisArgs = getArgs(args, false);
-        mainArgs = getArgs(args, true);
+        final Arguments arguments = new Arguments(args);
+        final IncludedSettings settings = new IncludedSettings();
+        final UserSettings userSettings = settings.getUserSettings();
+        final DirectoryManager manager = new DirectoryManager(settings.getRepositoryDir());
 
-        for (int i = 0; i < thisArgs.length; ++i) {
-            thisArgs[i] = thisArgs[i].substring(thisArgs[i].indexOf(':') + 1);
-        }
-
-        settings = new IncludedSettings();
-        userSettings = settings.getUserSettings();
-
-        manager = new DirectoryManager(settings.getRepositoryDir());
+        appState = new AppState(settings, userSettings, arguments, manager);
     }
 
     public static void main(final String[] args) {
@@ -34,91 +27,54 @@ public class Main {
     }
 
     private void run() {
-        update();
-        initVersions();
+        setupLookAndFeel();
+
+        firstStartSetup();
+        try {
+            update();
+        } catch(final Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Exception while updating: "+
+                    e.getMessage());
+        }
         startMain();
     }
 
-    private boolean hasArg(final String name) {
-        for (final String arg : thisArgs) {
-            if (arg.toLowerCase().equals(name)) {
-                return true;
+    private void firstStartSetup() {
+        final InitialSetup setup = new InitialSetup(appState);
+        if (setup.requireSetup()) {
+            setup.doSetup();
+
+            if (setup.exitRequested()) {
+                System.exit(0);
             }
         }
-        return false;
-    }
-
-    private String getArg(final String name) {
-        for (final String arg : thisArgs) {
-            if (arg.toLowerCase().startsWith(name+"=")) {
-                return arg.substring(name.length() + 1);
-            }
-        }
-        return null;
-    }
-
-    private void initVersions() {
-        manager.scan();
-        manager.cleanUp();
     }
 
     private void startMain() {
-        final Version version = findStartVersion();
-        userSettings.save();
+        final VersionSelector versionSelector = new VersionSelector(appState);
+        final Version version = versionSelector.findStartVersion();
+        appState.userSettings.save();
 
         if (version != null) {
-            version.start(mainArgs);
+            version.start(appState.arguments.getMainArgs());
         }
-    }
-
-    private Version findStartVersion() {
-        Version version = null;
-
-        final String commandLineVersion = getArg("version");
-        if (commandLineVersion != null) {
-            version = findVersion(commandLineVersion);
-        } else if (userSettings.isAutostart()) {
-            version = findVersion(userSettings.getLastVersion());
-        }
-
-        if (version == null || hasArg("select")) {
-            version = new VersionSelectWindow(manager.getVersions(),
-                    version, userSettings).ask();
-        }
-
-        if (version != null) {
-            userSettings.setLastVersion(version.getVersion());
-        }
-
-        return version;
-    }
-
-    private Version findVersion(final String name) {
-        for (final Version version : manager.getVersions()) {
-            if (version.getVersion().equals(name)) {
-                return version;
-            }
-        }
-        return null;
     }
 
     private void update() {
-        // hasArg("offline")
-        // TODO: if online and last update check is long enough ago: check for update
-        // if update available: download, store and save as last version
-        // if user set: delete last version
+        final Updater updater = new Updater(appState,
+                new InternetDownloader(appState.settings.getUri()),
+                new UIProgressWindow());
+        if (updater.shouldUpdate()) {
+            updater.update();
+        }
     }
 
-    private String[] getArgs(final String[] args, final boolean selectMainArgs) {
-        final List<String> result = new LinkedList<String>();
-
-        for (final String arg : args) {
-            if ((arg.startsWith("-L:") || arg.startsWith("--L:") ||
-                    arg.startsWith("/L:")) != selectMainArgs) {
-                result.add(arg);
-            }
+    private void setupLookAndFeel() {
+        try {
+            final String nativeLF = UIManager.getSystemLookAndFeelClassName();
+            UIManager.setLookAndFeel(nativeLF);
+        } catch (final Exception e) {
         }
-
-        return result.toArray(new String[result.size()]);
     }
 }

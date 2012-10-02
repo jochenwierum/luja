@@ -1,4 +1,4 @@
-package de.jowisoftware.luja;
+package de.jowisoftware.luja.settings;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
 
 public class SimpleUserSettings implements UserSettings {
     private final Properties properties = new Properties();
@@ -37,13 +38,26 @@ public class SimpleUserSettings implements UserSettings {
         }
     }
 
+    private long getLong(final String key, final long defaultValue) {
+        final String value = properties.getProperty(key);
+
+        if (value == null) {
+            return defaultValue;
+        } else {
+            return Long.parseLong(value);
+        }
+    }
+
+    private int getInt(final String key, final long defaultValue) {
+        return (int) getLong(key, defaultValue);
+    }
+
     @Override
     public void save() {
         try {
             final FileOutputStream outputStream = new FileOutputStream(settingsFile);
             properties.store(outputStream, "automatically saved user settings");
             outputStream.close();
-            System.out.println(isAutoClean());
         } catch (final IOException e) {
             throw new RuntimeException("Unable to save user.settings to " +
                     settingsFile, e);
@@ -61,23 +75,23 @@ public class SimpleUserSettings implements UserSettings {
     }
 
     @Override
-    public String getLastVersion() {
-        return properties.getProperty("lastversion");
+    public String getLastStartedVersion() {
+        return properties.getProperty("lastStartedVersion");
     }
 
     @Override
-    public void setLastVersion(final String version) {
-        properties.setProperty("lastversion", version);
+    public void setLastStartedVersion(final String version) {
+        properties.setProperty("lastStartedVersion", version);
     }
 
     @Override
-    public String getRecentVersion() {
-        return properties.getProperty("recentversion");
+    public String getLastDownloadedVersion() {
+        return properties.getProperty("lastDownloadedVersion", "");
     }
 
     @Override
-    public void setRecentVersion(final String version) {
-        properties.setProperty("recentversion", version);
+    public void setLastDownloadedVersion(final String version) {
+        properties.setProperty("lastDownloadedVersion", version);
     }
 
     @Override
@@ -88,5 +102,35 @@ public class SimpleUserSettings implements UserSettings {
     @Override
     public void setAutoClean(final boolean autoClean) {
         properties.setProperty("autoclean", Boolean.toString(autoClean));
+    }
+
+    @Override
+    public UpdatePeriod getUpdatePeriod() {
+        return UpdatePeriod.values()[getInt("updatePeriod", 0)];
+    }
+
+    @Override
+    public void setUpdatePeriod(final UpdatePeriod period) {
+        properties.setProperty("updatePeriod", Integer.toString(period.ordinal()));
+    }
+
+    @Override
+    public boolean isFirstStart() {
+        return getBoolean("firstStart", true);
+    }
+
+    @Override
+    public void setFirstStart(final boolean value) {
+        properties.setProperty("firstStart", Boolean.toString(value));
+    }
+
+    @Override
+    public long getLastUpdateCheck() {
+        return getLong("lastCheck", 0);
+    }
+
+    @Override
+    public void setLastUpdateCheck(final long value) {
+        properties.setProperty("lastCheck", Long.toString(value));
     }
 }

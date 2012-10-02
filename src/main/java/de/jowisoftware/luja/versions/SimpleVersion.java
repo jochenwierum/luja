@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import de.jowisoftware.luja.startup.Startup;
 
 public class SimpleVersion implements Version {
     private final File jarFile;
@@ -14,11 +13,18 @@ public class SimpleVersion implements Version {
     private final String downloadDate;
 
     public SimpleVersion(final File propertiesFile, final File dir) {
-        final Properties properties = readProperties(propertiesFile);
-        this.version = properties.getProperty("version");
-        this.downloadDate = properties.getProperty("downloadDate", "unknown Date");
-        this.jarFile = new File(dir, properties.getProperty("filename"));
         this.propertiesFile = propertiesFile;
+
+        final Properties properties = readProperties(propertiesFile);
+        this.version = properties.getProperty("version", "unknown version");
+        this.downloadDate = properties.getProperty("downloadDate", "unknown Date");
+
+        File file = null;
+        try {
+            file = new File(dir, properties.getProperty("filename"));
+        } catch (final Exception e) {
+        }
+        this.jarFile = file;
     }
 
     private Properties readProperties(final File file) {
@@ -51,7 +57,7 @@ public class SimpleVersion implements Version {
 
     @Override
     public boolean isSane() {
-        return jarFile.exists() && jarFile.isFile();
+        return jarFile != null && jarFile.exists() && jarFile.isFile();
     }
 
     @Override

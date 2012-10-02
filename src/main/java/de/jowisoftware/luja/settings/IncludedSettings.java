@@ -1,4 +1,4 @@
-package de.jowisoftware.luja;
+package de.jowisoftware.luja.settings;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,12 +36,17 @@ public class IncludedSettings implements Settings {
     }
 
     @Override
+    public UserSettings getUserSettings() {
+        return new SimpleUserSettings(getRepositoryDir());
+    }
+
+    @Override
     public String getName() {
         return properties.getProperty("name");
     }
 
     @Override
-    public UserSettings getUserSettings() {
-        return new SimpleUserSettings(getRepositoryDir());
+    public String getUri() {
+        return properties.getProperty("uri");
     }
 }

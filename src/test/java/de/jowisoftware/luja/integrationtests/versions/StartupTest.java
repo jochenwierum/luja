@@ -1,11 +1,11 @@
-package de.jowisoftware.luja.integrationtests.startup;
+package de.jowisoftware.luja.integrationtests.versions;
 
 import java.io.File;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.jowisoftware.luja.startup.Startup;
+import de.jowisoftware.luja.versions.Startup;
 
 public class StartupTest {
     @Test public void

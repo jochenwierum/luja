@@ -1,20 +1,20 @@
 package de.jowisoftware.luja.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import de.jowisoftware.luja.UserSettings;
+import de.jowisoftware.luja.settings.UpdatePeriod;
+import de.jowisoftware.luja.settings.UserSettings;
 
 public class SettingsWindow extends JDialog {
     private static final long serialVersionUID = 4750662089711466437L;
@@ -25,14 +25,13 @@ public class SettingsWindow extends JDialog {
         this.settings = settings;
 
         initWindow();
-
-        setResizable(false);
-        setSize(400, 240);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
         setModal(true);
-        centerOnScreen();
 
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setResizable(false);
+        pack();
+        SwingUtils.centerOnScreen(this);
     }
 
     private void initWindow() {
@@ -52,10 +51,15 @@ public class SettingsWindow extends JDialog {
         buttons.setLayout(new BorderLayout());
 
         buttons.add(new JLabel(
-                "<html>If you check the first checkbox, this window will never " +
-                 "appear automatically again. However, you can get this window " +
-                 "back by starting this application with the <kbd>-L:select</kb" +
-                 "d> command line switch.</html>"), BorderLayout.CENTER);
+                "<html><p><br />If you check the first checkbox, this window will " +
+                "never appear<br />automatically again. However, you can get " +
+                "this window back by<br /> starting this application with the" +
+                " <kbd>-L:select</kbd> command line switch. <br /><br />" +
+                "Available command line switches:</p><table>" +
+                "<tr><td><kbd>-L:offline</kbd></td><td>don't perform update check</td></tr>" +
+                "<tr><td><kbd>-L:update</kbd></td><td>perform update check</td></tr>" +
+                "<tr><td><kbd>-L:select</kbd></td><td>show select and settings window</td></tr>" +
+                "</table></html>"), BorderLayout.CENTER);
         buttons.add(createCloseButton(), BorderLayout.SOUTH);
 
         return buttons;
@@ -78,12 +82,27 @@ public class SettingsWindow extends JDialog {
         panel.add(new JLabel("Automatically start last version"));
         panel.add(createAutostartCheckbox());
 
-        panel.add(new JLabel("Update every"));
-        panel.add(new JLabel("start, day, week, month, never"));
-
-        panel.add(new JLabel("Delete old version on update"));
+        panel.add(new JLabel("Delete old versions on update"));
         panel.add(createCleanupCheckbox());
+
+        panel.add(new JLabel("Update every"));
+        panel.add(createUpdateList());
         return panel;
+    }
+
+    private JComboBox createUpdateList() {
+        final JComboBox list = new JComboBox(UpdatePeriod.values());
+
+        list.setSelectedItem(settings.getUpdatePeriod());
+
+        list.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                settings.setUpdatePeriod((UpdatePeriod) list.getSelectedItem());
+            }
+        });
+
+        return list;
     }
 
     private JCheckBox createCleanupCheckbox() {
@@ -108,15 +127,5 @@ public class SettingsWindow extends JDialog {
         });
         box.setSelected(settings.isAutostart());
         return box;
-    }
-
-    private void centerOnScreen() {
-        final Dimension screensize = Toolkit.getDefaultToolkit().getScreenSize();
-        final Dimension windowSize = getSize();
-
-        final int x = (screensize.width - windowSize.width) / 2;
-        final int y = (screensize.height - windowSize.height) / 2;
-
-        setLocation(x, y);
     }
 }

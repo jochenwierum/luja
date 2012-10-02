@@ -1,9 +1,7 @@
 package de.jowisoftware.luja.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -14,13 +12,19 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
@@ -29,7 +33,7 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import de.jowisoftware.luja.UserSettings;
+import de.jowisoftware.luja.settings.UserSettings;
 import de.jowisoftware.luja.versions.Version;
 
 public class VersionSelectWindow extends JFrame  {
@@ -41,6 +45,7 @@ public class VersionSelectWindow extends JFrame  {
     private final LinkedList<Version> versions;
     private final Version selectedVersion;
     private final UserSettings userSettings;
+    private final String name;
 
     private final List<ListDataListener> listeners = new LinkedList<ListDataListener>();
 
@@ -49,14 +54,15 @@ public class VersionSelectWindow extends JFrame  {
     private JList versionList;
 
     public VersionSelectWindow(final LinkedList<Version> versions, final Version selectedVersion,
-            final UserSettings userSettings) {
+            final UserSettings userSettings, final String name) {
+        this.name = name;
         this.versions = versions;
         this.selectedVersion = selectedVersion;
         this.userSettings = userSettings;
     }
 
     private void initWindow() {
-        setTitle("Select version to start");
+        setTitle("Select version of " + name);
 
         setLayout(new BorderLayout());
         add(createButtonBar(), BorderLayout.SOUTH);
@@ -66,6 +72,7 @@ public class VersionSelectWindow extends JFrame  {
         setupWindowListener();
         setResizable(false);
         setSize(320, 240);
+        SwingUtils.centerOnScreen(this);
     }
 
     private void setupWindowListener() {
@@ -95,6 +102,8 @@ public class VersionSelectWindow extends JFrame  {
 
         panel.add(launchButton);
         panel.add(createCancelButton());
+
+        getRootPane().setDefaultButton(launchButton);
 
         return panel;
     }
@@ -226,17 +235,7 @@ public class VersionSelectWindow extends JFrame  {
     private void updateSelection() {
         result = (Version) versionList.getSelectedValue();
         launchButton.setEnabled(true);
-        deleteButton.setEnabled(!result.getVersion().equals(userSettings.getRecentVersion()));
-    }
-
-    private void centerOnScreen() {
-        final Dimension screensize = Toolkit.getDefaultToolkit().getScreenSize();
-        final Dimension windowSize = getSize();
-
-        final int x = (screensize.width - windowSize.width) / 2;
-        final int y = (screensize.height - windowSize.height) / 2;
-
-        setLocation(x, y);
+        deleteButton.setEnabled(!result.getVersion().equals(userSettings.getLastDownloadedVersion()));
     }
 
     public Version ask() {
@@ -245,7 +244,6 @@ public class VersionSelectWindow extends JFrame  {
                 @Override
                 public void run() {
                     initWindow();
-                    centerOnScreen();
                     setVisible(true);
                 }
             });
@@ -281,5 +279,26 @@ public class VersionSelectWindow extends JFrame  {
         } catch (final InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    protected JRootPane createRootPane() {
+        final JRootPane rootPane = new JRootPane();
+        final KeyStroke stroke = KeyStroke.getKeyStroke("ESCAPE");
+
+        final InputMap inputMap = rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        inputMap.put(stroke, "ESCAPE");
+
+        final Action actionListener = new AbstractAction() {
+            private static final long serialVersionUID = -6249429754927544350L;
+
+            @Override
+            public void actionPerformed(final ActionEvent actionEvent) {
+                dispose();
+            }
+        };
+
+        rootPane.getActionMap().put("ESCAPE", actionListener);
+        return rootPane;
     }
 }

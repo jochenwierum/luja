@@ -1,4 +1,4 @@
-package de.jowisoftware.luja.startup;
+package de.jowisoftware.luja.versions;
 
 import java.io.File;
 import java.io.IOException;

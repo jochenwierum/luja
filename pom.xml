@@ -140,17 +140,22 @@
 						<phase>package</phase>
 						<configuration>
 							<target>
-								<property name="timestamp" value="${timestamp}" />
-								<property name="buildNumber" value="${buildNumber}" />
-								<property name="scmBranch" value="${scmBranch}" />
-								
-								<property name="luja.name" value="${luja.name}" />
-								<property name="luja.dirName" value="${luja.dirName}" />
-								<property name="luja.uri" value="${luja.uri}" />
+						        <echo message="name = ${luja.name}${line.separator}" file="target/launcher.properties" append="false" />
+						        <echo message="dirname = ${luja.dirName}${line.separator}" file="target/launcher.properties" append="true" />
+						        <echo message="uri = ${luja.uri}${line.separator}" file="target/launcher.properties" append="true" />
 
-								<ant antfile="${basedir}/dist.xml">
-									<target name="finshJar" />
-								</ant>
+						        <move tofile="target/luja.tmp" file="target/luja.jar" />
+						        <jar destfile="target/luja.jar">
+						            <zipfileset includes="**/*" src="target/luja.tmp" />
+						            <fileset dir="target" includes="launcher.properties" />
+						            <manifest>
+						                <attribute name="Main-Class" value="de.jowisoftware.luja.Main" />
+						                <attribute name="Build-Date" value="${timestamp}" />
+						                <attribute name="SCM-Revision" value="${buildNumber}" />
+						                <attribute name="SCM-Branch" value="${scmBranch}" />
+						            </manifest>
+						        </jar>
+						        <delete file="target/luja.tmp" />
 							</target>
 						</configuration>
 						<goals>

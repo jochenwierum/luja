@@ -11,6 +11,7 @@ import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -39,7 +40,7 @@ import de.jowisoftware.luja.versions.Version;
 public class VersionSelectWindow extends JFrame  {
     private static final long serialVersionUID = -2146020734170600981L;
 
-    private final Object lock = new Object();
+    private final CountDownLatch closingLatch = new CountDownLatch(1);
     private volatile Version result = null;
 
     private final LinkedList<Version> versions;
@@ -79,9 +80,7 @@ public class VersionSelectWindow extends JFrame  {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(final WindowEvent e) {
-                synchronized(lock) {
-                    lock.notify();
-                }
+                closingLatch.countDown();
             }
         });
     }
@@ -239,10 +238,6 @@ public class VersionSelectWindow extends JFrame  {
     }
 
     public Version ask() {
-        // FIXME: closing the window fast enough could cause a deadlock
-        // 1. wait until the thread has started
-        // 2. show the window
-        // 3. wait until the window closed in the thread (1)
         try {
             SwingUtilities.invokeAndWait(new Runnable(){
                 @Override
@@ -268,10 +263,9 @@ public class VersionSelectWindow extends JFrame  {
             public void run() {
                 while(isVisible()) {
                     try {
-                        synchronized(lock) {
-                            lock.wait();
-                        }
+                        closingLatch.await();
                     } catch(final InterruptedException e){
+                        throw new RuntimeException(e);
                     }
                 }
             }

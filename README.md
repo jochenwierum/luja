@@ -25,18 +25,18 @@ Building LUJA
 
 To use LUJA in your own application, build LUJA from source and provide a few options:
 
-`
+```
 $ git clone git://github.com/jochenwierum/luja.git
 $ cd luja
 $ mvn package -Dluja.name=SSH-Client -Dluja.dirName=sshclient -Dluja.uri=http://jowisoftware.de/ssh/build.properties
 $ mv target/luja.jar luja-ssh.jar
-`
+```
 
-Test your luja:
+Test your LUJA:
 
-`
+```
 $ java -jar luja-ssh.jar
-`
+```
 
 Of course, you should use your own values:
 
@@ -46,7 +46,7 @@ Of course, you should use your own values:
 
 The online properties file should have the following content:
 
-`
+```
 ; The date when the software was build
 Build-Date: 2012-10-02
 ; A unique version number or name
@@ -55,4 +55,4 @@ SCM-Revision: 1c32ab09b0dd680a17afb61184eec1275d775954
 Download-URI: http://jowisoftware.de/ssh/ssh.jar
 ; The size of the jar file
 Size: 1202575
-`
+```

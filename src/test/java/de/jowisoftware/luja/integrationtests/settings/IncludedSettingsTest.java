@@ -13,7 +13,7 @@ public class IncludedSettingsTest {
     includedSettingsAreFound() {
         final IncludedSettings settings = new IncludedSettings();
         assertEquals("Test-Name", settings.getName());
-        assertEquals("Test-Dir", settings.getRepositoryDir().getName());
+        assertTrue(settings.getRepositoryDir().getName().matches("\\.?Test-Dir"));
         assertTrue(settings.getRepositoryDir().getParentFile().isDirectory());
         assertEquals("http://example.org/Test-URI", settings.getUri());
 

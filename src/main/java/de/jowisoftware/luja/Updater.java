@@ -41,7 +41,6 @@ public class Updater {
             appState.manager.scan();
 
             downloadVersion(downloader, version);
-            // download, store
 
             cleanOldVersions();
             selectStartupVersion(version);
@@ -67,7 +66,7 @@ public class Updater {
     }
 
     private String getBaseName(final String version) {
-        final String prefix = "v" + version.replaceAll("[^A-Z0-9]", "");
+        final String prefix = "v" + version.replaceAll("[^A-Za-z0-9]", "");
 
         int counter = 0;
         String baseName = prefix;

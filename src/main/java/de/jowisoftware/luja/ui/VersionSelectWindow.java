@@ -239,6 +239,10 @@ public class VersionSelectWindow extends JFrame  {
     }
 
     public Version ask() {
+        // FIXME: closing the window fast enough could cause a deadlock
+        // 1. wait until the thread has started
+        // 2. show the window
+        // 3. wait until the window closed in the thread (1)
         try {
             SwingUtilities.invokeAndWait(new Runnable(){
                 @Override

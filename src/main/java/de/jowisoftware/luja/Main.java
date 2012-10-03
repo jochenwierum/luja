@@ -1,12 +1,11 @@
 package de.jowisoftware.luja;
 
-import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
 import de.jowisoftware.luja.settings.IncludedSettings;
 import de.jowisoftware.luja.settings.UserSettings;
 import de.jowisoftware.luja.ui.InitialSetup;
-import de.jowisoftware.luja.ui.UIProgressWindow;
+import de.jowisoftware.luja.ui.SwingProgressWindow;
 import de.jowisoftware.luja.versions.DirectoryManager;
 import de.jowisoftware.luja.versions.Version;
 
@@ -28,15 +27,18 @@ public class Main {
 
     private void run() {
         setupLookAndFeel();
+        final SwingProgressWindow progress = new SwingProgressWindow(
+                appState.settings.getName());
 
         firstStartSetup();
         try {
-            update();
+            update(progress);
         } catch(final Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Exception while updating: "+
-                    e.getMessage());
+            progress.error("Exception while updating: " + e.getMessage());
         }
+
+        progress.close();
         startMain();
     }
 
@@ -61,10 +63,10 @@ public class Main {
         }
     }
 
-    private void update() {
+    private void update(final SwingProgressWindow progress) {
         final Updater updater = new Updater(appState,
                 new InternetDownloader(appState.settings.getUri()),
-                new UIProgressWindow());
+                progress);
         if (updater.shouldUpdate()) {
             updater.update();
         }

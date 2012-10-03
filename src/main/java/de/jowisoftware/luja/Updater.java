@@ -93,7 +93,7 @@ public class Updater {
             final int size) throws IOException {
         final byte buffer[] = new byte[2048];
 
-        progressWindow.create(size);
+        progressWindow.startProgress(size);
 
         final FileOutputStream outputStream = new FileOutputStream(
                 new File(appState.settings.getRepositoryDir(), fileName));

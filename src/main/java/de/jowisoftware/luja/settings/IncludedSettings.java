@@ -1,7 +1,6 @@
 package de.jowisoftware.luja.settings;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -14,8 +13,8 @@ public class IncludedSettings implements Settings {
                     getClass().getClassLoader().getResourceAsStream("launcher.properties");
             properties.load(inputStream);
             inputStream.close();
-        } catch(final IOException e) {
-            throw new RuntimeException("Could not load loader properties", e);
+        } catch(final Exception e) {
+            throw new RuntimeException("Could not load included launcher properties", e);
         }
     }
 
